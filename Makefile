@@ -1,4 +1,4 @@
-.PHONY: init dev build
+.PHONY: init dev build lint fmt sqlc migrate-up migrate-down
 
 init:
 	brew install pre-commit
@@ -16,3 +16,12 @@ lint:
 
 fmt:
 	go tool gofumpt -l -w .
+
+sqlc:
+	go tool sqlc generate
+
+migrate-up:
+	go tool goose up --env=.env.dev
+
+migrate-down:
+	go tool goose down --env=.env.dev

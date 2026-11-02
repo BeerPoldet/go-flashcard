@@ -1,2 +1,2 @@
--- name: flashcardlist :many
+-- name: FlashcardList :many
 SELECT * FROM flashcards LIMIT $1;

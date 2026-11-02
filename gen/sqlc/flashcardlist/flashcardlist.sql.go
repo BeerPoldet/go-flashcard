@@ -9,12 +9,12 @@ import (
 	"context"
 )
 
-const flashcardlist = `-- name: flashcardlist :many
+const flashcardList = `-- name: FlashcardList :many
 SELECT id, title, content, created_at FROM flashcards LIMIT $1
 `
 
-func (q *Queries) flashcardlist(ctx context.Context, limit int32) ([]Flashcard, error) {
-	rows, err := q.db.Query(ctx, flashcardlist, limit)
+func (q *Queries) FlashcardList(ctx context.Context, limit int32) ([]Flashcard, error) {
+	rows, err := q.db.Query(ctx, flashcardList, limit)
 	if err != nil {
 		return nil, err
 	}

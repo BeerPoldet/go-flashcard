@@ -1,29 +1,35 @@
 package main
 
 import (
+	"context"
 	"net"
 	"net/http"
 
 	"github.com/beerpoldet/flash-card-go/internal/adapters/logger"
-	"github.com/beerpoldet/flash-card-go/internal/adapters/postgres"
 	listflashcards "github.com/beerpoldet/flash-card-go/internal/usecase/list-flashcards"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
 	logger := logger.NewLogger()
-
-	mux := http.NewServeMux()
-
-	postgresClient := postgres.NewPostgres()
-
-	listflashcardsHandler := listflashcards.NewHandler(postgresClient)
-	mux.Handle("GET /", listflashcardsHandler)
 
 	config, err := loadConfig()
 	if err != nil {
 		logger.Error("loadConfig failed", "error", err)
 		return
 	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, config.DB.ConnectionURI)
+	if err != nil {
+		logger.Error("create pgxpool failed", "error", err)
+		return
+	}
+	defer pool.Close()
+
+	mux := http.NewServeMux()
+	listflashcardsHandler := listflashcards.NewLiveHandler(pool, logger)
+	mux.Handle("GET /flashcards", listflashcardsHandler)
 
 	listener, err := net.Listen("tcp", config.Server.Address)
 	if err != nil {

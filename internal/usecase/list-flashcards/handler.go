@@ -2,27 +2,32 @@ package listflashcards
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
 type Handler struct {
-	svc service
+	svc *service
 }
 
-func NewHandler(svc service) *Handler {
+func NewHandler(svc *service) *Handler {
 	return &Handler{svc: svc}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	flashcards := h.svc.ListFlashcards()
+	context := req.Context()
+	flashcards, err := h.svc.db.ListFlashcards(context, 10)
+	if err != nil {
+		h.svc.logger.Error("db.ListFlashcards:", "err", err)
+		w.WriteHeader(500)
+		return
+	}
 	type response struct {
-		Data []string `json:"data"`
+		Data []flashcard `json:"data"`
 	}
 	res, err := json.Marshal(response{Data: flashcards})
 	if err != nil {
+		h.svc.logger.Error("json.Marshal:", "err", err)
 		w.WriteHeader(500)
-		_, _ = fmt.Fprintf(w, "Something went wrong, error %v", err)
 		return
 	}
 	w.WriteHeader(200)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/beerpoldet/flash-card-go/internal/adapters/logger"
-	listflashcards "github.com/beerpoldet/flash-card-go/internal/usecase/list-flashcards"
+	flashcardlist "github.com/beerpoldet/flash-card-go/internal/usecase/flashcardlist"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -28,8 +28,8 @@ func main() {
 	defer pool.Close()
 
 	mux := http.NewServeMux()
-	listflashcardsHandler := listflashcards.NewLiveHandler(pool, logger)
-	mux.Handle("GET /flashcards", listflashcardsHandler)
+	flashcardlistHandler := flashcardlist.NewLiveHandler(pool, logger)
+	mux.Handle("GET /flashcards", flashcardlistHandler)
 
 	listener, err := net.Listen("tcp", config.Server.Address)
 	if err != nil {

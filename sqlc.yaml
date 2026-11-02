@@ -5,6 +5,6 @@ sql:
     queries: "db/queries/flashcardlist"
     gen:
       go:
-        package: "flashcardlist"
+        package: "sqlcflashcardlist"
         out: "gen/sqlc/flashcardlist"
         sql_package: "pgx/v5"

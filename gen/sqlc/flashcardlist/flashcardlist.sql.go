@@ -3,7 +3,7 @@
 //   sqlc v1.31.1
 // source: flashcardlist.sql
 
-package flashcardlist
+package sqlcflashcardlist
 
 import (
 	"context"

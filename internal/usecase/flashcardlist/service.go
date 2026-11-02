@@ -1,4 +1,4 @@
-package listflashcards
+package flashcardlist
 
 import "context"
 

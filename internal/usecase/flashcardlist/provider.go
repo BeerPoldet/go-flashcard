@@ -1,4 +1,4 @@
-package listflashcards
+package flashcardlist
 
 import (
 	flashcardlistdb "github.com/beerpoldet/flash-card-go/gen/sqlc/flashcardlist"

@@ -7,7 +7,7 @@ services:
       - postgres_data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=flashcard
-      - POSTGRES_PASSWORD=21OQnwPjcMLzKLlNoiplAGz5E/4UQL+wXP+RMoxv9Ww= #gitleaks:allow
+      - POSTGRES_PASSWORD=3d00564067f2a2651be0b063f21363e3cf0d4b827bf439d5 #gitleaks:allow
       - POSTGRES_DB=flashcard
 
 volumes:

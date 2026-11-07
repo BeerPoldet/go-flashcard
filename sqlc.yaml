@@ -1,0 +1,10 @@
+version: '2'
+sql:
+  - engine: "postgresql"
+    schema: "db/migrations"
+    queries: "db/queries/flashcardlist"
+    gen:
+      go:
+        package: "sqlcflashcardlist"
+        out: "gen/sqlc/flashcardlist"
+        sql_package: "pgx/v5"

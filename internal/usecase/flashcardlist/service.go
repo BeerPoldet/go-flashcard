@@ -2,30 +2,24 @@ package flashcardlist
 
 import "context"
 
-type useCase struct {
+type service struct {
 	db     db
 	logger logger
-	output useCaseOutputPort
 }
 
-func NewUseCase(db db, logger logger, output useCaseOutputPort) *useCase {
-	return &useCase{
+func NewService(db db, logger logger) *service {
+	return &service{
 		db:     db,
 		logger: logger,
-		output: output,
 	}
 }
 
-func (uc *useCase) listFlashcards(ctx context.Context, limit int) {
-	uc.output.getFlashcardListResponse(uc.db.ListFlashcards(ctx, int32(limit)))
+func (uc *service) Perform(ctx context.Context, limit int) ([]flashcard, error) {
+	return uc.db.ListFlashcards(ctx, int32(limit))
 }
 
-type useCaseInputPort interface {
-	listFlashcards(context.Context, int)
-}
-
-type useCaseOutputPort interface {
-	getFlashcardListResponse([]flashcard, error)
+type useCase interface {
+	Perform(context.Context, int) ([]flashcard, error)
 }
 
 type db interface {

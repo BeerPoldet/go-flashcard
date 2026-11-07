@@ -7,17 +7,19 @@ import (
 )
 
 type dbClient struct {
-	query *sqlc.Queries
+	query  *sqlc.Queries
+	logger logger
 }
 
-func NewDBClient(query *sqlc.Queries) *dbClient {
-	return &dbClient{query: query}
+func NewDBClient(query *sqlc.Queries, logger logger) *dbClient {
+	return &dbClient{query: query, logger: logger}
 }
 
 func (p *dbClient) ListFlashcards(ctx context.Context, limit int32) ([]flashcard, error) {
 	flashcards, err := p.query.FlashcardList(ctx, limit)
 	flashcardModels := []flashcard{}
 	if err != nil {
+		p.logger.Error("ListFlashcards:", "err", err)
 		return flashcardModels, err
 	}
 	for _, f := range flashcards {

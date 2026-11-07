@@ -2,25 +2,24 @@ package flashcardlist
 
 import (
 	"context"
+	"fmt"
 
 	sqlc "github.com/beerpoldet/flash-card-go/gen/sqlc/flashcardlist"
 )
 
-type dbClient struct {
-	query  *sqlc.Queries
-	logger logger
+type postgres struct {
+	query *sqlc.Queries
 }
 
-func NewDBClient(query *sqlc.Queries, logger logger) *dbClient {
-	return &dbClient{query: query, logger: logger}
+func newPostgres(query *sqlc.Queries) *postgres {
+	return &postgres{query: query}
 }
 
-func (p *dbClient) ListFlashcards(ctx context.Context, limit int32) ([]flashcard, error) {
+func (p *postgres) ListFlashcards(ctx context.Context, limit int32) ([]flashcard, error) {
 	flashcards, err := p.query.FlashcardList(ctx, limit)
 	flashcardModels := []flashcard{}
 	if err != nil {
-		p.logger.Error("ListFlashcards:", "err", err)
-		return flashcardModels, err
+		return flashcardModels, fmt.Errorf("ListFlashcards: %w", err)
 	}
 	for _, f := range flashcards {
 		flashcardModels = append(flashcardModels, asFlashcard(&f))

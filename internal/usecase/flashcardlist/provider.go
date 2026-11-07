@@ -7,7 +7,7 @@ import (
 
 func NewLiveHandler(pool *pgxpool.Pool, logger logger) *Handler {
 	queries := flashcardlistdb.New(pool)
-	db := NewDBClient(queries, logger)
-	uc := NewService(db, logger)
-	return &Handler{uc: uc}
+	db := newPostgres(queries)
+	uc := newService(db, logger)
+	return newHandler(uc, logger)
 }

@@ -11,8 +11,7 @@ type logger interface {
 
 func WriteJSON(
 	status int,
-	response any,
-	writer http.ResponseWriter,
+	response any, writer http.ResponseWriter,
 	logger logger,
 ) {
 	payload, err := json.Marshal(response)
@@ -21,6 +20,7 @@ func WriteJSON(
 		writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	writer.Header().Set("content-type", "application/json")
 	writer.WriteHeader(status)
 	_, _ = writer.Write(payload)
 }

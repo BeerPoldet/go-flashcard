@@ -7,14 +7,125 @@ package sqlcflashcardlist
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const flashcardList = `-- name: FlashcardList :many
-SELECT id, title, content, created_at FROM flashcards LIMIT $1
+const flashcardListByCreatedAtAsc = `-- name: FlashcardListByCreatedAtAsc :many
+SELECT id, title, content, created_at FROM flashcards
+ORDER BY created_at ASC, id ASC
+LIMIT $1
 `
 
-func (q *Queries) FlashcardList(ctx context.Context, limit int32) ([]Flashcard, error) {
-	rows, err := q.db.Query(ctx, flashcardList, limit)
+func (q *Queries) FlashcardListByCreatedAtAsc(ctx context.Context, lim int32) ([]Flashcard, error) {
+	rows, err := q.db.Query(ctx, flashcardListByCreatedAtAsc, lim)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Flashcard
+	for rows.Next() {
+		var i Flashcard
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Content,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const flashcardListByCreatedAtAscAfter = `-- name: FlashcardListByCreatedAtAscAfter :many
+SELECT id, title, content, created_at FROM flashcards
+WHERE (created_at, id) > ($1::timestamp, $2::int)
+ORDER BY created_at ASC, id ASC
+LIMIT $3
+`
+
+type FlashcardListByCreatedAtAscAfterParams struct {
+	CreatedAt pgtype.Timestamp
+	ID        int32
+	Lim       int32
+}
+
+func (q *Queries) FlashcardListByCreatedAtAscAfter(ctx context.Context, arg FlashcardListByCreatedAtAscAfterParams) ([]Flashcard, error) {
+	rows, err := q.db.Query(ctx, flashcardListByCreatedAtAscAfter, arg.CreatedAt, arg.ID, arg.Lim)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Flashcard
+	for rows.Next() {
+		var i Flashcard
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Content,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const flashcardListByCreatedAtDesc = `-- name: FlashcardListByCreatedAtDesc :many
+SELECT id, title, content, created_at FROM flashcards
+ORDER BY created_at DESC, id DESC
+LIMIT $1
+`
+
+func (q *Queries) FlashcardListByCreatedAtDesc(ctx context.Context, lim int32) ([]Flashcard, error) {
+	rows, err := q.db.Query(ctx, flashcardListByCreatedAtDesc, lim)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Flashcard
+	for rows.Next() {
+		var i Flashcard
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Content,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const flashcardListByCreatedAtDescAfter = `-- name: FlashcardListByCreatedAtDescAfter :many
+SELECT id, title, content, created_at FROM flashcards
+WHERE (created_at, id) < ($1::timestamp, $2::int)
+ORDER BY created_at DESC, id DESC
+LIMIT $3
+`
+
+type FlashcardListByCreatedAtDescAfterParams struct {
+	CreatedAt pgtype.Timestamp
+	ID        int32
+	Lim       int32
+}
+
+func (q *Queries) FlashcardListByCreatedAtDescAfter(ctx context.Context, arg FlashcardListByCreatedAtDescAfterParams) ([]Flashcard, error) {
+	rows, err := q.db.Query(ctx, flashcardListByCreatedAtDescAfter, arg.CreatedAt, arg.ID, arg.Lim)
 	if err != nil {
 		return nil, err
 	}

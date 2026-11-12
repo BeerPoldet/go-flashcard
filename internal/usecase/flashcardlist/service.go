@@ -44,20 +44,17 @@ func (uc *service) Perform(
 	ctx context.Context,
 	options queryOptions,
 ) (listFlashcardQueryResult, error) {
-	if options.cursor.Sort == "" {
-		options.cursor.Sort = createdAtSort
-	}
-	if options.cursor.Order == "" {
-		options.cursor.Order = descOrder
-	}
 	flashcards, err := uc.listFlashcards(ctx, options.cursor, options.limit+1)
 	if err != nil {
 		return listFlashcardQueryResult{}, err
 	}
-	if int32(len(flashcards)) <= options.limit { // no need to trim out the +1 limit fetched
+	// No need to trim out the +1 limit fetched
+	// This also indicates no more data. It's the last page.
+	if int32(len(flashcards)) <= options.limit {
 		return listFlashcardQueryResult{data: flashcards}, nil
 	}
 
+	// trim out the +1 limit fetched
 	data := flashcards[:options.limit]
 	after, err := afterCursorFrom(
 		options.cursor.Sort,

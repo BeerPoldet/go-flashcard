@@ -1,6 +1,7 @@
 package flashcardlist
 
 import (
+	"cmp"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -44,7 +45,7 @@ func newHandler(uc usecase, logger logger) *Handler {
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	queryParams := queryParams{
-		Limit: 10,
+		Limit: defaultLimit,
 	}
 	if err := h.decoder.Decode(&queryParams, req.URL.Query()); err != nil {
 		h.logger.Debug("decoder queryParams:", "err", err)
@@ -176,7 +177,7 @@ type flashcardResponse struct {
 }
 
 type queryParams struct {
-	Limit int32  `form:"limit" validate:"omitempty,min=1,max=20"`
+	Limit int32  `form:"limit" validate:"min=1,max=20"`
 	Sort  string `form:"sort"  validate:"omitempty,oneof=created_at"`
 	Order string `form:"order" validate:"omitempty,oneof=asc desc"`
 	After string `form:"after" validate:"omitempty"`
@@ -189,27 +190,26 @@ var (
 )
 
 func newQueryCursor(after string, sort string, order string) (cursor, error) {
+	if after == "" {
+		return cursor{
+			Sort:     cmp.Or(newSort(sort), createdAtSort),
+			Order:    cmp.Or(newOrder(order), descOrder),
+			Position: nil,
+		}, nil
+	}
+	if sort != "" || order != "" {
+		return cursor{}, errCursorWithSortOrOrder
+	}
+	afterByte, err := base64.RawURLEncoding.DecodeString(after)
+	if err != nil {
+		return cursor{}, errInvalidCursor
+	}
 	cur := cursor{}
-	if after != "" && (sort != "" || order != "") {
-		return cur, errCursorWithSortOrOrder
+	if err := json.Unmarshal(afterByte, &cur); err != nil {
+		return cur, errInvalidCursor
 	}
-	if after != "" {
-		afterByte, err := base64.RawURLEncoding.DecodeString(after)
-		if err != nil {
-			return cur, errInvalidCursor
-		}
-		if err := json.Unmarshal(afterByte, &cur); err != nil {
-			return cur, errInvalidCursor
-		}
-		if err := cur.validate(); err != nil {
-			return cur, err
-		}
-	}
-	if sort != "" {
-		cur.Sort = newSort(sort)
-	}
-	if order != "" {
-		cur.Order = newOrder(order)
+	if err := cur.validate(); err != nil {
+		return cur, err
 	}
 	return cur, nil
 }
@@ -229,6 +229,8 @@ func (c cursor) validate() error {
 	}
 }
 
+const defaultLimit int32 = 10
+
 func newSort(key string) sort {
 	switch key {
 	case "created_at":
@@ -242,7 +244,9 @@ func newOrder(key string) order {
 	switch key {
 	case "asc":
 		return ascOrder
-	default:
+	case "desc":
 		return descOrder
+	default:
+		return ""
 	}
 }
